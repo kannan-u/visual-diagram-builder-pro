@@ -13,5 +13,6 @@ export function ProtectedRoute() {
     return <Navigate to="/login" replace />;
   }
 
+  // then otherwise render nested routes
   return <Outlet />;
 }

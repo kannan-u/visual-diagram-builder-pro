@@ -1,47 +1,58 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { AuthProvider } from './hooks/useAuth';
-import Login from './components/Auth/Login';
-import Profile from './components/Profile/Profile';
-//import Dashboard from './components/pages/Dashboard';
-import DashboardPage from "./components/pages/DashboardPage";
-import { ProtectedRoute } from './routes/ProtectedRoute';
-import ThemeToggle from './components/UI/ThemeToggle';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./hooks/useAuth";
 
-// import Login from "./pages/Login";
-import DiagramEditorPage from "./components/pages/DiagramEditorPage";
+import DashboardPage from "./components/Dashboard/DashboardPage";
+import DiagramEditorPage from "./components/Diagrams/DiagramEditorPage";
+import LoginPage from "./components/Auth/Login";
+import RegisterPage from "./components/Auth/RegisterPage";
+import ProfilePage from "./components/Profile/Profile";
+import LayoutWrapper from "./components/Layout/LayoutWrapper";
 
 export default function App() {
-  
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <header style={{display:'flex',justifyContent:'space-between',padding:12}}>
-          <div><Link to="/">Diagram Editor</Link></div>
-          <nav style={{display:'flex',gap:12,alignItems:'center'}}>
-            <Link to="/profile">Profile</Link>
-            <ThemeToggle />
-          </nav>
-        </header>
-       {/*  //testing area */}
-{/*         <main>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/Dashboard" element={<Dashboard/>} />
-          </Routes>
-        </main> */}
-         <main>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/diagram/:id" element={<DiagramEditorPage />} />
-            </Route>
-          </Routes>
-        </main>
-      </BrowserRouter>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboardPage" />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Wrap pages with LayoutWrapper for header/footer */}
+          <Route
+            path="/dashboardPage"
+            element={
+              <LayoutWrapper>
+                <DashboardPage />
+              </LayoutWrapper>
+            }
+          />
+          <Route
+            path="/diagram/new"
+            element={
+              <LayoutWrapper>
+                <DiagramEditorPage />
+              </LayoutWrapper>
+            }
+          />
+          <Route
+            path="/diagram/:id"
+            element={
+              <LayoutWrapper>
+                <DiagramEditorPage />
+              </LayoutWrapper>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <LayoutWrapper>
+                <ProfilePage />
+              </LayoutWrapper>
+            }
+          />
+        </Routes>
+      </Router>
     </AuthProvider>
   );
 }

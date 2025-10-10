@@ -21,7 +21,7 @@ export default function Login() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      nav("/dashboard");
+      nav("/dashboardPage");
     } catch (err) {
        if (err instanceof Error) {
         alert(err.message);
