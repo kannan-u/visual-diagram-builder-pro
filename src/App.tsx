@@ -23,6 +23,7 @@ export default function App() {
             <ThemeToggle />
           </nav>
         </header>
+       {/*  //testing area */}
 {/*         <main>
           <Routes>
             <Route path="/login" element={<Login />} />
