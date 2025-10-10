@@ -5,7 +5,6 @@ import { doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { getNextUserId } from "../../services/firestoreHelpers"; // your existing file
 
-
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,13 +19,12 @@ export default function RegisterPage() {
     try {
       // 1️⃣ Create user in Firebase Auth
       const cred = await createUserWithEmailAndPassword(auth, email, password);
-            const userId = await getNextUserId();
+   //   const userId = await getNextUserId();
 
-
-      // 2️⃣ Create user document in Firestore under /users/{uid}
-   await setDoc(doc(db, "users", cred.user.uid), {
+        // 2️⃣ Create user document in Firestore under /users/{uid}
+      await setDoc(doc(db, "users", cred.user.uid), {
         uid: cred.user.uid,
-        userId,          // sequential ID
+      //  userId, // sequential ID
         email,
         role,
         createdAt: new Date(),
@@ -79,10 +77,7 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <button
-          onClick={() => nav("/login")}
-          style={styles.linkButton}
-        >
+        <button onClick={() => nav("/login")} style={styles.linkButton}>
           Already have an account? Login
         </button>
       </div>

@@ -1,100 +1,100 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import {
-  onAuthStateChanged,
-  User,
-  signOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from 'firebase/auth';
-import { auth, db } from '../services/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+  import React, { createContext, useContext, useEffect, useState } from 'react';
+  import {
+    onAuthStateChanged,
+    User,
+    signOut,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+  } from 'firebase/auth';
+  import { auth, db } from '../services/firebase';
+  import { doc, getDoc, setDoc } from 'firebase/firestore';
 
-type AuthState = {
-  user: User | null;
-  role?: 'editor' | 'viewer' | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-};
+  type AuthState = {
+    user: User | null;
+    role?: 'editor' | 'viewer' | null;
+    loading: boolean;
+    login: (email: string, password: string) => Promise<void>;
+    register: (email: string, password: string) => Promise<void>;
+    logout: () => Promise<void>;
+  };
 
-const AuthContext = createContext<AuthState | undefined>(undefined);
+  const AuthContext = createContext<AuthState | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<'editor' | 'viewer' | null>(null);
-  const [loading, setLoading] = useState(true);
+  export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [role, setRole] = useState<'editor' | 'viewer' | null>(null);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      if (!u) {
-        setUser(null);
-        setRole(null);
-        setLoading(false);
-        return;
-      }
+    useEffect(() => {
+      const unsub = onAuthStateChanged(auth, async (u) => {
+        if (!u) {
+          setUser(null);
+          setRole(null);
+          setLoading(false);
+          return;
+        }
 
-      try {
-        const ref = doc(db, 'users', u.uid);
-        const snap = await getDoc(ref);
-        setRole(snap.exists() ? (snap.data() as any).role : null);
-      } catch (err) {
-        console.error('Error fetching role:', err);
-        setRole(null);
-      }
-
-      setUser(u);
-      setLoading(false);
-    });
-
-    return () => unsub();
-  }, []);
-
-  // 🔹 Login
-  const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
-     // Wait for the AuthState to update
-  await new Promise<void>((resolve) => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      if (u) {
-        const ref = doc(db, 'users', u.uid);
-        getDoc(ref).then((snap) => {
+        try {
+          const ref = doc(db, 'users', u.uid);
+          const snap = await getDoc(ref);
           setRole(snap.exists() ? (snap.data() as any).role : null);
-          setUser(u);
+        } catch (err) {
+          console.error('Error fetching role:', err);
+          setRole(null);
+        }
+
+        setUser(u);
+        setLoading(false);
+      });
+
+      return () => unsub();
+    }, []);
+
+    // 🔹 Login
+    const login = async (email: string, password: string) => {
+      await signInWithEmailAndPassword(auth, email, password);
+      // Wait for the AuthState to update
+    await new Promise<void>((resolve) => {
+      const unsub = onAuthStateChanged(auth, (u) => {
+        if (u) {
+          const ref = doc(db, 'users', u.uid);
+          getDoc(ref).then((snap) => {
+            setRole(snap.exists() ? (snap.data() as any).role : null);
+            setUser(u);
+            resolve();
+          });
+        } else {
           resolve();
-        });
-      } else {
-        resolve();
-      }
-      unsub();
+        }
+        unsub();
+      });
     });
-  });
+    };
+
+    // 🔹 Register
+    const register = async (email: string, password: string) => {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        email,
+        role: 'editor',
+        createdAt: new Date(),
+      });
+    };
+
+    // 🔹 Logout
+    const logout = async () => {
+      await signOut(auth);
+    };
+
+    return (
+      <AuthContext.Provider value={{ user, role, loading, login, register, logout }}>
+        {children}
+      </AuthContext.Provider>
+    );
   };
 
-  // 🔹 Register
-  const register = async (email: string, password: string) => {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      email,
-      role: 'editor',
-      createdAt: new Date(),
-    });
-  };
-
-  // 🔹 Logout
-  const logout = async () => {
-    await signOut(auth);
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, role, loading, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
-}
+  export function useAuth() {
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+    return ctx;
+  }
