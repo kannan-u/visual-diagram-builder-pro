@@ -25,6 +25,35 @@ const SidebarToolbox: React.FC<SidebarToolboxProps> = ({ saveDiagram, onDragStar
         Save Diagram
       </button>
 
+      <button
+  draggable
+  onDragStart={(e) => e.dataTransfer.setData("application/reactflow", "rectangle")}
+>
+  Rectangle
+</button>
+
+<button
+  draggable
+  onDragStart={(e) => e.dataTransfer.setData("application/reactflow", "circle")}
+>
+  Circle
+</button>
+
+<button
+  draggable
+  onDragStart={(e) => e.dataTransfer.setData("application/reactflow", "diamond")}
+>
+  Diamond
+</button>
+
+<button
+  draggable
+  onDragStart={(e) => e.dataTransfer.setData("application/reactflow", "triangle")}
+>
+  Triangle
+</button>
+
+
       {shapes.map((shape) => (
         <div
           key={shape.type}

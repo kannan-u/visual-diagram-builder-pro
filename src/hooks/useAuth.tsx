@@ -53,6 +53,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // 🔹 Login
   const login = async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth, email, password);
+     // Wait for the AuthState to update
+  await new Promise<void>((resolve) => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      if (u) {
+        const ref = doc(db, 'users', u.uid);
+        getDoc(ref).then((snap) => {
+          setRole(snap.exists() ? (snap.data() as any).role : null);
+          setUser(u);
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+      unsub();
+    });
+  });
   };
 
   // 🔹 Register

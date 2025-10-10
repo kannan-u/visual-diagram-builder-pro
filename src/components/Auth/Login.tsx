@@ -1,47 +1,39 @@
 import React, { useState, CSSProperties } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../services/firebase";
+import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "../../services/firebase";
 
-export default function Login() {
-  const [isRegister, setIsRegister] = useState(false);
+export default function LoginPage() {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
-  const nav = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      if (isRegister) {
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, "users", cred.user.uid), { email, role: role });
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
-      nav("/dashboardPage");
+      await login(email, password); // waits for state to update
+      navigate("/dashboardPage");
     } catch (err) {
-       if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert(String(err));
-      }
-   }
-  }
+      alert(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>{isRegister ? "Create Account" : "Login"}</h2>
-        <form onSubmit={submit} style={styles.form}>
+        <h2 style={styles.title}>Login</h2>
+        <form onSubmit={handleSubmit} style={styles.form}>
           <label style={styles.label}>Email</label>
           <input
             style={styles.input}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
             required
           />
 
@@ -51,46 +43,58 @@ export default function Login() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
             required
           />
 
-          <button type="submit" style={styles.button}>
-            {isRegister ? "Sign Up" : "Login"}
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <button onClick={() => setIsRegister((s) => !s)} style={styles.linkButton}>
-          {isRegister ? "Already have an account? Login" : "Create a new account"}
-        </button>
+        <div style={styles.footer}>
+          <span>Don't have an account?</span>
+          <button
+            style={styles.linkButton}
+            onClick={() => navigate("/register")}
+          >
+            Register
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-const styles: { [key: string]: CSSProperties }  = {
+const styles: { [key: string]: CSSProperties } = {
   container: {
     display: "flex",
-    height: "100vh",
     alignItems: "center",
     justifyContent: "center",
-    background: "#f5f6fa",
+    height: "100vh",
+    background: "#f0f2f5",
   },
   card: {
-    width: 350,
+    width: 360,
     padding: 30,
-    borderRadius: 10,
-    background: "#fff",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   title: {
-    textAlign: "center",
-    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: 600,
+    marginBottom: 24,
     color: "#333",
   },
   form: {
+    width: "100%",
     display: "flex",
     flexDirection: "column",
-    gap: 10,
+    gap: 14,
   },
   label: {
     fontSize: 14,
@@ -98,29 +102,37 @@ const styles: { [key: string]: CSSProperties }  = {
     color: "#555",
   },
   input: {
-    padding: "10px 12px",
-    borderRadius: 5,
-    border: "1px solid #ccc",
+    padding: "12px 14px",
     fontSize: 14,
+    borderRadius: 6,
+    border: "1px solid #ccc",
+    outline: "none",
+    transition: "border-color 0.2s",
   },
   button: {
     marginTop: 10,
-    padding: "10px 12px",
-    borderRadius: 5,
+    padding: "12px 0",
+    fontSize: 16,
+    fontWeight: 500,
+    borderRadius: 6,
     border: "none",
     backgroundColor: "#007bff",
-    color: "white",
-    fontSize: 15,
+    color: "#fff",
     cursor: "pointer",
+    transition: "background-color 0.2s",
+  },
+  footer: {
+    marginTop: 20,
+    fontSize: 14,
+    display: "flex",
+    gap: 6,
+    alignItems: "center",
   },
   linkButton: {
     background: "none",
     border: "none",
     color: "#007bff",
-    fontSize: 14,
-    marginTop: 15,
     cursor: "pointer",
-    textAlign: "center",
-    width: "100%",
+    fontWeight: 500,
   },
 };
