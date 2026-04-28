@@ -14,7 +14,7 @@
     role?: 'editor' | 'viewer' | null;
     loading: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string) => Promise<void>;
+    register: (email: string, password: string, role: string) => Promise<void>;
     logout: () => Promise<void>;
   };
 
@@ -22,14 +22,14 @@
 
   export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [role, setRole] = useState<'editor' | 'viewer' | null>(null);
+    const [role, setRole] = useState<"editor" | "viewer">("viewer");
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
       const unsub = onAuthStateChanged(auth, async (u) => {
         if (!u) {
           setUser(null);
-          setRole(null);
+          setRole('viewer');
           setLoading(false);
           return;
         }
@@ -40,7 +40,7 @@
           setRole(snap.exists() ? (snap.data() as any).role : null);
         } catch (err) {
           console.error('Error fetching role:', err);
-          setRole(null);
+          //setRole(null);
         }
 
         setUser(u);
@@ -72,11 +72,12 @@
     };
 
     // 🔹 Register
-    const register = async (email: string, password: string) => {
+    const register = async (email: string, password: string, role: string) => {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await setDoc(doc(db, 'users', cred.user.uid), {
+        uid: cred.user.uid,
         email,
-        role: 'editor',
+        role,
         createdAt: new Date(),
       });
     };

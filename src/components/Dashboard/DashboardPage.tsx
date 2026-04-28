@@ -9,6 +9,7 @@ type Diagram = {
   id: string;
   name: string;
   ownerId: string;
+  email: string
   createdAt: any;
   updatedAt?: any;
 };
@@ -28,6 +29,7 @@ const DashboardPage: React.FC = () => {
         id: doc.id,
         name: (doc.data() as any).name || "Untitled Diagram",
         ownerId: (doc.data() as any).ownerId,
+        email: (doc.data() as any).email,
         createdAt: (doc.data() as any).createdAt?.toDate() || new Date(),
         updatedAt: (doc.data() as any).updatedAt?.toDate(),
       }));
@@ -65,6 +67,7 @@ const DashboardPage: React.FC = () => {
       const docRef = await addDoc(collection(db, "diagrams"), {
         name: diagramName,
         ownerId: user?.uid,
+        email: user?.email,
         createdAt: new Date(),
         updatedAt: null,
       });
@@ -134,13 +137,13 @@ const DashboardPage: React.FC = () => {
             onClick={() => handleOpenDiagram(diagram.id)}
             style={{
               padding: 16,
-              border: "1px solid #ccc",
+              border: "1px solid #0b70a6ff",
               borderRadius: 8,
               cursor: role === "editor" ? "pointer" : "default",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              backgroundColor: "#f9f9f9",
+              backgroundColor: "#c1c3d8ff",
               transition: "0.2s",
             }}
           >
@@ -158,7 +161,7 @@ const DashboardPage: React.FC = () => {
               Created: {diagram.createdAt.toLocaleDateString()}
             </div>
             <div style={{ fontSize: 12, color: "#777" }}>
-              Owner: {diagram.ownerId}
+              Owner: {diagram.email}
             </div>
             {role === "viewer" && (
               <div style={{ fontSize: 12, color: "#f00", marginTop: 4 }}>

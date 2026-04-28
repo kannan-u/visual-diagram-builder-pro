@@ -1,40 +1,32 @@
 import React, { useState, CSSProperties } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../services/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { getNextUserId } from "../../services/firestoreHelpers"; // your existing file
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"editor" | "viewer">("viewer");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+  const { register } = useAuth(); 
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
     setError(null);
 
     try {
-      // 1️⃣ Create user in Firebase Auth
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-   //   const userId = await getNextUserId();
-
-        // 2️⃣ Create user document in Firestore under /users/{uid}
-      await setDoc(doc(db, "users", cred.user.uid), {
-        uid: cred.user.uid,
-      //  userId, // sequential ID
-        email,
-        role,
-        createdAt: new Date(),
-      });
+      // ✅ Call register() from Auth context
+      await register(email, password, role);
 
       alert("Account created successfully!");
       nav("/login");
     } catch (err: any) {
       console.error(err);
       setError(err.message);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -73,7 +65,7 @@ export default function RegisterPage() {
           />
 
           <button type="submit" style={styles.button}>
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"} 
           </button>
         </form>
 

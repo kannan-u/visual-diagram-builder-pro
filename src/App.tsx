@@ -27,14 +27,14 @@ export default function App() {
               </LayoutWrapper>
             }
           />
-          <Route
+          {/* <Route
             path="/diagram/new"
             element={
               <LayoutWrapper>
                 <DiagramEditorPage />
               </LayoutWrapper>
             }
-          />
+          /> */}
           <Route
             path="/diagram/:id"
             element={

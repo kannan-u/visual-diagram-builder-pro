@@ -14,8 +14,8 @@ import {
   EdgeChange,
   Connection,
   useReactFlow,
-   Handle, 
-   Position
+  Handle,
+  Position,
 } from "reactflow";
 
 import "reactflow/dist/style.css";
@@ -34,7 +34,6 @@ const EditableNode = ({ data, selected }: any) => {
     rectangle: { borderRadius: 6 },
     circle: { borderRadius: "50%" },
     diamond: { transform: "rotate(45deg)" },
-    
   };
 
   return (
@@ -54,8 +53,11 @@ const EditableNode = ({ data, selected }: any) => {
       }}
       onDoubleClick={() => setEditing(true)}
     >
-
-      <Handle type="target" position={Position.Top} style={{ background: "#555" }} />
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ background: "#555" }}
+      />
 
       {editing ? (
         <input
@@ -69,12 +71,20 @@ const EditableNode = ({ data, selected }: any) => {
           style={{ width: "90%", border: "1px solid #ccc", borderRadius: 4 }}
         />
       ) : (
-        <div style={{ transform: data.shape === "diamond" ? "rotate(-45deg)" : "none" }}>
+        <div
+          style={{
+            transform: data.shape === "diamond" ? "rotate(-45deg)" : "none",
+          }}
+        >
           {label || "Unnamed Node"}
         </div>
       )}
       {/* 🔹 Bottom handle (for outgoing edges) */}
-      <Handle type="source" position={Position.Bottom} style={{ background: "#555" }} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{ background: "#555" }}
+      />
     </div>
   );
 };
@@ -118,17 +128,20 @@ const DiagramCanvas: React.FC = () => {
 
   // 🔹 Node & Edge Change Handlers
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    (changes: NodeChange[]) =>
+      setNodes((nds) => applyNodeChanges(changes, nds)),
     []
   );
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    (changes: EdgeChange[]) =>
+      setEdges((eds) => applyEdgeChanges(changes, eds)),
     []
   );
 
   // 🔹 Connect nodes
   const onConnect = useCallback(
-    (params: Connection) => isEditable && setEdges((eds) => addEdge(params, eds)),
+    (params: Connection) =>
+      isEditable && setEdges((eds) => addEdge(params, eds)),
     [isEditable]
   );
 
@@ -138,40 +151,43 @@ const DiagramCanvas: React.FC = () => {
     event.dataTransfer.dropEffect = "move";
   }, []);
 
-const onDrop = useCallback(
-  (event: React.DragEvent) => {
-    if (!isEditable) return;
-    event.preventDefault();
-    const type = event.dataTransfer.getData("application/reactflow");
-    if (!type) return;
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      if (!isEditable) return;
+      event.preventDefault();
+      const type = event.dataTransfer.getData("application/reactflow");
+      if (!type) return;
 
-    const position = project({
-      x: event.clientX - (reactFlowWrapper.current?.getBoundingClientRect().left || 0),
-      y: event.clientY - (reactFlowWrapper.current?.getBoundingClientRect().top || 0),
-    });
+      const position = project({
+        x:
+          event.clientX -
+          (reactFlowWrapper.current?.getBoundingClientRect().left || 0),
+        y:
+          event.clientY -
+          (reactFlowWrapper.current?.getBoundingClientRect().top || 0),
+      });
 
-    // Set color & shape based on type
-    const shapeMap: any = {
-      rectangle: { shape: "rectangle", color: "#a2d2ff" },
-      circle: { shape: "circle", color: "#ffafcc" },
-      diamond: { shape: "diamond", color: "#b5ead7" },
-      triangle: { shape: "triangle", color: "#455fe4ff" },
-    };
+      // Set color & shape based on type
+      const shapeMap: any = {
+        rectangle: { shape: "rectangle", color: "#a2d2ff" },
+        circle: { shape: "circle", color: "#ffafcc" },
+        diamond: { shape: "diamond", color: "#b5ead7" },
+        triangle: { shape: "triangle", color: "#455fe4ff" },
+      };
 
-    const newNode: Node = {
-      id: `${+new Date()}`,
-      type: "editableNode",
-      position,
-      data: {
-        label: `${type} node`,
-        ...shapeMap[type],
-      },
-    };
-    setNodes((nds) => nds.concat(newNode));
-  },
-  [isEditable]
-);
-
+      const newNode: Node = {
+        id: `${+new Date()}`,
+        type: "editableNode",
+        position,
+        data: {
+          label: `${type} node`,
+          ...shapeMap[type],
+        },
+      };
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [isEditable]
+  );
 
   // 🔹 Handle Right Click
   const handlePaneContextMenu = useCallback((event: React.MouseEvent) => {
