@@ -1,4 +1,4 @@
-# 🧩 Visual Diagram Builder Pro
+# Visual Diagram Builder Pro
 
 A full-stack, real-time diagram editor built with React, TypeScript, and Firebase. Create, edit, and share flowcharts with drag-and-drop simplicity — powered by React Flow and secured with Firebase Authentication.
 
@@ -10,7 +10,7 @@ A full-stack, real-time diagram editor built with React, TypeScript, and Firebas
 
 ---
 
-## ✨ Features
+## Features
 
 - **Drag-and-Drop Diagram Editor** — Intuitive node-based canvas using React Flow
 - **Multiple Node Shapes** — Rectangle, Circle, Diamond, Triangle, Hexagon, Parallelogram
@@ -25,7 +25,7 @@ A full-stack, real-time diagram editor built with React, TypeScript, and Firebas
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -39,7 +39,7 @@ A full-stack, real-time diagram editor built with React, TypeScript, and Firebas
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 visual-diagram-builder-pro/
@@ -76,7 +76,7 @@ visual-diagram-builder-pro/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -117,7 +117,7 @@ REACT_APP_FIREBASE_APP_ID=your_app_id
 
 ---
 
-## 🔐 Authentication Flow
+## Authentication Flow
 
 1. User registers or logs in via Firebase Auth
 2. `useAuth` hook tracks authentication state and role globally
@@ -127,7 +127,7 @@ REACT_APP_FIREBASE_APP_ID=your_app_id
 
 ---
 
-## 📊 Firestore Data Model
+## Firestore Data Model
 
 ```
 diagrams (collection)
@@ -143,13 +143,13 @@ diagrams (collection)
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 **Login Page**
 ![Login Page](/public/Login.png)
 
 **Diagram List (Dashboard)**
-![Diagram List](/public/Diagram-List.png)
+![Diagram List](/public/Diagrams-List.png)
 
 **Diagram Canvas**
 ![Diagram Canvas](/public/Diagram.png)
@@ -159,7 +159,7 @@ diagrams (collection)
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 npm test                       # Run all tests in watch mode
@@ -176,7 +176,7 @@ The test suite covers:
 
 ---
 
-## 🌐 Deployment
+## Deployment
 
 Deployed on **Firebase Hosting**:
 
@@ -189,13 +189,13 @@ firebase deploy
 
 ---
 
-## 📝 License
+## License
 
 This project was built as an assessment for Visual Diagram Builder. All rights reserved.
 
 ---
 
-## 👤 Author
+## Author
 
 **Kannan U**
 GitHub: [@kannan-u](https://github.com/kannan-u)
