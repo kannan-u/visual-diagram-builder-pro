@@ -26,7 +26,16 @@ import SidebarToolbox from "./SidebarToolbox";
 import { Navigate, useParams } from "react-router-dom";
 
 // 🔹 Editable Node Component
-const EditableNode = ({ data, selected }: any) => {
+interface EditableNodeProps {
+  data: {
+    label: string;
+    color?: string;
+    shape?: "rectangle" | "circle" | "diamond" | "triangle";
+  };
+  selected: boolean;
+}
+
+const EditableNode = ({ data, selected }: EditableNodeProps) => {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(data.label || "");
 
@@ -130,19 +139,19 @@ const DiagramCanvas: React.FC = () => {
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
       setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
+    [],
   );
   const onEdgesChange = useCallback(
     (changes: EdgeChange[]) =>
       setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
+    [],
   );
 
   // 🔹 Connect nodes
   const onConnect = useCallback(
     (params: Connection) =>
       isEditable && setEdges((eds) => addEdge(params, eds)),
-    [isEditable]
+    [isEditable],
   );
 
   // 🔹 Drag & Drop
@@ -175,18 +184,25 @@ const DiagramCanvas: React.FC = () => {
         triangle: { shape: "triangle", color: "#455fe4ff" },
       };
 
+      const labelMap: Record<string, string> = {
+        rectangle: "Rectangle",
+        circle: "Circle",
+        diamond: "Diamond",
+        triangle: "Triangle",
+      };
+
       const newNode: Node = {
         id: `${+new Date()}`,
         type: "editableNode",
         position,
         data: {
-          label: `${type} node`,
+          label: labelMap[type] || "Node",
           ...shapeMap[type],
         },
       };
       setNodes((nds) => nds.concat(newNode));
     },
-    [isEditable]
+    [isEditable],
   );
 
   // 🔹 Handle Right Click
@@ -205,7 +221,7 @@ const DiagramCanvas: React.FC = () => {
         target: node,
       });
     },
-    [isEditable]
+    [isEditable],
   );
 
   const handleEdgeContextMenu = useCallback(
@@ -218,7 +234,7 @@ const DiagramCanvas: React.FC = () => {
         target: edge,
       });
     },
-    [isEditable]
+    [isEditable],
   );
 
   const handleDelete = useCallback(() => {
@@ -232,8 +248,8 @@ const DiagramCanvas: React.FC = () => {
         eds.filter(
           (e) =>
             e.source !== contextMenu.target!.id &&
-            e.target !== contextMenu.target!.id
-        )
+            e.target !== contextMenu.target!.id,
+        ),
       );
     }
     setContextMenu(null);
@@ -248,16 +264,16 @@ const DiagramCanvas: React.FC = () => {
     if ("source" in contextMenu.target) {
       setEdges((eds) =>
         eds.map((e) =>
-          e.id === contextMenu.target!.id ? { ...e, label: newLabel } : e
-        )
+          e.id === contextMenu.target!.id ? { ...e, label: newLabel } : e,
+        ),
       );
     } else {
       setNodes((nds) =>
         nds.map((n) =>
           n.id === contextMenu.target!.id
             ? { ...n, data: { ...n.data, label: newLabel } }
-            : n
-        )
+            : n,
+        ),
       );
     }
     setContextMenu(null);
@@ -272,7 +288,7 @@ const DiagramCanvas: React.FC = () => {
         await setDoc(
           doc(diagramsRef, id),
           { nodes, edges, updatedAt: new Date() },
-          { merge: true }
+          { merge: true },
         );
         alert("Diagram updated!");
       } else {

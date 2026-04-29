@@ -4,20 +4,21 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import InviteUser from "./InviteUser/InviteUser";
+import { Timestamp } from "firebase/firestore";
 
 type Diagram = {
   id: string;
   name: string;
   ownerId: string;
-  email: string
-  createdAt: any;
-  updatedAt?: any;
+  createdAt: Timestamp;
+  updatedAt?: Timestamp;
 };
 
 const DashboardPage: React.FC = () => {
   const { user, role, loading } = useAuth(); // role from useAuth
   const [diagrams, setDiagrams] = useState<Diagram[]>([]);
   const [loadingDiagrams, setLoadingDiagrams] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sortAsc, setSortAsc] = useState(false);
   const navigate = useNavigate();
 
@@ -35,7 +36,7 @@ const DashboardPage: React.FC = () => {
       }));
       setDiagrams(diagramsData);
     } catch (err) {
-      console.error("Failed to load diagrams:", err);
+      setError("Failed to load diagrams. Please try again.");
     } finally {
       setLoadingDiagrams(false);
     }
@@ -48,12 +49,19 @@ const DashboardPage: React.FC = () => {
   if (loading) return <div>Loading authentication...</div>;
   if (!user) return <Navigate to="/login" replace />;
 
+  const toMillis = (val: any): number => {
+    if (!val) return 0;
+    if (typeof val.toDate === "function") return val.toDate().getTime(); // Firebase Timestamp
+    if (val instanceof Date) return val.getTime(); // JS Date
+    if (typeof val === "string" || typeof val === "number")
+      return new Date(val).getTime(); // string/number
+    return 0;
+  };
+
   const sortedDiagrams = [...diagrams].sort((a, b) => {
-    const dateA = a.updatedAt || a.createdAt;
-    const dateB = b.updatedAt || b.createdAt;
-    return sortAsc
-      ? dateA.getTime() - dateB.getTime()
-      : dateB.getTime() - dateA.getTime();
+    const dateA = toMillis(a.updatedAt || a.createdAt);
+    const dateB = toMillis(b.updatedAt || b.createdAt);
+    return sortAsc ? dateA - dateB : dateB - dateA;
   });
 
   const handleCreateNew = async () => {
@@ -73,13 +81,39 @@ const DashboardPage: React.FC = () => {
       });
       navigate(`/diagram/${docRef.id}`); // redirect to the new diagram
     } catch (err) {
-      console.error("Failed to create new diagram:", err);
-      alert("Failed to create diagram");
+      alert("Failed to create diagram. Please try again.");
     }
   };
 
   const handleOpenDiagram = (diagramId: string) =>
     navigate(`/diagram/${diagramId}`);
+
+  if (loadingDiagrams) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{
+            width: 40, height: 40, border: "4px solid #f3f3f3",
+            borderTop: "4px solid #007bff", borderRadius: "50%",
+            animation: "spin 1s linear infinite", margin: "0 auto 12px"
+          }} />
+          <p style={{ color: "#555" }}>Loading diagrams...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ textAlign: "center", padding: 40 }}>
+        <p style={{ color: "red", marginBottom: 12 }}>⚠️ {error}</p>
+        <button onClick={() => window.location.reload()}
+          style={{ padding: "8px 16px", cursor: "pointer" }}>
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: 20 }}>
@@ -121,8 +155,11 @@ const DashboardPage: React.FC = () => {
         )}
       </div>
 
-      {loadingDiagrams && <p>Loading diagrams...</p>}
-      {!loadingDiagrams && diagrams.length === 0 && <p>No diagrams found.</p>}
+      {sortedDiagrams.length === 0 && (
+        <div style={{ textAlign: "center", padding: 40, color: "#888" }}>
+          No diagrams yet. Click "+ Create New Diagram" to get started.
+        </div>
+      )}
 
       <div
         style={{
@@ -158,10 +195,11 @@ const DashboardPage: React.FC = () => {
               {diagram.name}
             </div>
             <div style={{ fontSize: 12, color: "#555", marginBottom: 4 }}>
-              Created: {diagram.createdAt.toLocaleDateString()}
+              Created:{" "}
+              {new Date(toMillis(diagram.createdAt)).toLocaleDateString()}
             </div>
             <div style={{ fontSize: 12, color: "#777" }}>
-              Owner: {diagram.email}
+              Owner: {diagram.ownerId}
             </div>
             {role === "viewer" && (
               <div style={{ fontSize: 12, color: "#f00", marginTop: 4 }}>
